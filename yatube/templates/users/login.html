@@ -1,0 +1,24 @@
+{% extends "users/base_user.html" %}
+
+{% block title %}
+  Войти
+{% endblock %}
+
+{% block card_header %}
+  Войти на сайт
+{% endblock %}
+
+{% block card_body %}
+  {% include 'includes/form/_errors.html' %}
+  <form method="post" action="{{ success_url }}">
+    {% include 'includes/form/_form.html' %}
+    <div class="col-md-6 offset-md-4">
+      <button type="submit" class="btn btn-primary">
+        Войти
+      </button>
+      <a href="{% url 'users:password_reset' %}" class="btn btn-link">
+        Забыли пароль?
+      </a>
+    </div>
+  </form>
+{% endblock %}

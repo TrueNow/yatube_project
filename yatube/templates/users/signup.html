@@ -1,0 +1,24 @@
+{% extends "users/base_user.html" %}
+
+{% block title %}
+  Зарегистрироваться
+{% endblock %}
+
+{% block card_header %}
+  Зарегистрироваться
+{% endblock %}
+
+{% block card_body %}
+  {% include 'includes/form/_errors.html' %}
+  <form method="post"
+        {% if success_url %}
+          action="{{ success_url }}"
+        {% endif %}>
+    {% include 'includes/form/_form.html' %}
+    <div class="col-md-6 offset-md-4">
+      <button type="submit" class="btn btn-primary">
+        Зарегистрироваться
+      </button>
+    </div>
+  </form>
+{% endblock %}

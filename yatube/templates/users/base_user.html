@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}
+  База users
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 p-5">
+      <div class="card">
+        <div class="card-header">
+          {% block card_header %}
+            База users
+          {% endblock %}
+        </div>
+        <div class="card-body">
+          {% block card_body %}
+            База users
+          {% endblock %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

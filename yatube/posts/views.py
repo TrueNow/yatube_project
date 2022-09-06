@@ -1,21 +1,85 @@
-# posts/views.py
-from django.shortcuts import render, get_object_or_404
+from django.contrib.auth import get_user_model
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.shortcuts import redirect
+from django.views.generic import CreateView, DetailView, ListView, UpdateView
+from django.views.generic.list import MultipleObjectMixin
+
+from .forms import PostForm
 from .models import Post, Group
 
 
-def index(request):
-    posts = Post.objects.order_by('-pub_date')[:10]
-    context = {
-        'posts': posts,
-    }
-    return render(request, 'posts/index.html', context)
+User = get_user_model()
+PAGINATE_BY: int = 10
 
 
-def group_posts(request, slug):
-    group = get_object_or_404(Group, slug=slug)
-    posts = Post.objects.filter(group=group).order_by('-pub_date')[:10]
-    context = {
-        'group': group,
-        'posts': posts,
-    }
-    return render(request, 'posts/group_list.html', context)
+class IndexView(ListView):
+    model = Post
+    context_object_name = 'posts'
+    template_name = 'posts/index.html'
+    paginate_by = PAGINATE_BY
+
+    def get_queryset(self):
+        return Post.objects.select_related('author', 'group')
+
+
+class PostsGroupView(DetailView, MultipleObjectMixin):
+    model = Group
+    slug_url_kwarg = 'group_slug'
+    slug_field = 'slug'
+    context_object_name = 'group'
+    template_name = 'posts/group_list.html'
+    paginate_by = PAGINATE_BY
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        return super().get_context_data(
+            object_list=self.object.posts.select_related('author'),
+            **kwargs
+        )
+
+
+class ProfileView(DetailView, MultipleObjectMixin):
+    model = User
+    slug_url_kwarg = 'username'
+    slug_field = 'username'
+    context_object_name = 'author'
+    template_name = 'posts/profile.html'
+    paginate_by = PAGINATE_BY
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        return super().get_context_data(
+            object_list=self.object.posts.select_related('group'),
+            **kwargs
+        )
+
+
+class PostDetailView(DetailView):
+    model = Post
+    pk_url_kwarg = 'post_id'
+    context_object_name = 'post'
+    template_name = 'posts/post_detail.html'
+
+
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
+    form_class = PostForm
+    template_name = 'posts/create_post.html'
+
+    def form_valid(self, form):
+        post = form.save(commit=False)
+        post.author = User.objects.get(pk=self.request.user.pk)
+        post.save()
+        return redirect('posts:profile', username=self.request.user.username)
+
+
+class PostUpdateView(LoginRequiredMixin, UpdateView):
+    model = Post
+    form_class = PostForm
+    pk_url_kwarg = 'post_id'
+    context_object_name = 'post'
+    template_name = 'posts/create_post.html'
+
+    def get(self, request, *args, **kwargs):
+        post = self.get_object()
+        if request.user != post.author:
+            return redirect('posts:post_detail', post_id=post.pk)
+        return super().get(request, *args, **kwargs)

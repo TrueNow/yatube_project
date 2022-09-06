@@ -1,0 +1,38 @@
+{% extends "users/base_user.html" %}
+
+{% block title %}
+  {% if post.pk %}
+    Редактировать запись
+  {% else %}
+    Добавить запись
+  {% endif %}
+{% endblock %}
+
+{% block card_header %}
+  {% if post.pk %}
+    Редактировать запись
+  {% else %}
+    Добавить запись
+  {% endif %}
+{% endblock %}
+
+{% block card_body %}
+  {% include 'includes/form/_errors.html' %}
+  <form method="post"
+        action="{% if post.pk %}
+                  {% url 'posts:post_edit' post.pk %}
+                {% else %}
+                  {% url 'posts:post_create' %}
+                {% endif %}">
+    {% include 'includes/form/_form.html' %}
+    <div class="col-md-6 offset-md-4">
+      <button type="submit" class="btn btn-primary">
+        {% if post.pk %}
+          Сохранить
+        {% else %}
+          Добавить
+        {% endif %}
+      </button>
+    </div>
+  </form>
+{% endblock %}
