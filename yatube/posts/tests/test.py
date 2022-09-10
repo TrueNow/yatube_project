@@ -7,27 +7,48 @@ User = get_user_model()
 
 
 class PostsTestCase(TestCase):
-    COUNT_POSTS_TEST = 15
+    COUNT_USERS_TEST = 2
+    COUNT_GROUPS_TEST = 2
+    COUNT_POSTS_TEST = 19
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.author = User.objects.create_user(username='Author')
-        cls.user = User.objects.create_user(username='User')
-        cls.group = Group.objects.create(
-            title='Тестовая группа',
-            slug='test_slug',
-            description='Тестовое описание',
+        users = User.objects.bulk_create(
+            [
+                User(
+                    pk=i,
+                    username=['Author', 'User'][i - 1]
+                ) for i in range(1, cls.COUNT_USERS_TEST + 1)
+            ]
         )
+        cls.author = users[0]
+        cls.user = users[1]
 
-        for i in range(cls.COUNT_POSTS_TEST):
-            Post.objects.create(
-                author=cls.author,
-                text=f'Тестовый пост {i + 1}',
-                group=cls.group,
-            )
+        groups = Group.objects.bulk_create(
+            [
+                Group(
+                    pk=i,
+                    title=f'Тестовая группа {i}',
+                    slug=f'test_slug_{i}',
+                    description=f'Тестовое описание {i}',
+                ) for i in range(1, cls.COUNT_GROUPS_TEST + 1)
+            ]
+        )
+        cls.group = groups[0]
 
-        cls.post = Post.objects.get(pk=cls.COUNT_POSTS_TEST)
+        posts = Post.objects.bulk_create(
+            [
+                Post(
+                    pk=i + 1,
+                    author=cls.author,
+                    text=f'Тестовый пост {i + 1}',
+                    group=cls.group,
+                ) for i in range(cls.COUNT_POSTS_TEST)
+            ],
+            batch_size=5,
+        )
+        cls.post = posts[cls.COUNT_POSTS_TEST - 1]
 
     def setUp(self):
         # Создаем неавторизованный клиент
