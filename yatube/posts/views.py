@@ -19,7 +19,7 @@ class IndexView(ListView):
     paginate_by = PAGINATE_BY
 
     def get_queryset(self):
-        return Post.objects.select_related('author', 'group')
+        return self.model.objects.select_related('author', 'group')
 
 
 class PostsGroupView(DetailView, MultipleObjectMixin):
@@ -66,7 +66,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         post = form.save(commit=False)
-        post.author = User.objects.get(pk=self.request.user.pk)
+        post.author = self.request.user
         post.save()
         return redirect('posts:profile', username=self.request.user.username)
 
