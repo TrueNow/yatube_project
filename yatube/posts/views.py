@@ -79,7 +79,7 @@ class PostUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'posts/create_post.html'
 
     def get(self, request, *args, **kwargs):
-        post = self.get_object()
-        if request.user != post.author:
-            return redirect('posts:post_detail', post_id=post.pk)
-        return super().get(request, *args, **kwargs)
+        response = super().get(request, *args, **kwargs)
+        if request.user != self.object.author:
+            return redirect('posts:post_detail', post_id=self.object.pk)
+        return response
