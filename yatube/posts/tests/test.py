@@ -14,33 +14,28 @@ class PostsTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        users = User.objects.bulk_create(
+        usernames = ['Author', 'User']
+        User.objects.bulk_create(
             [
-                User(
-                    pk=i,
-                    username=['Author', 'User'][i - 1]
-                ) for i in range(1, cls.COUNT_USERS_TEST + 1)
+                User(username=usernames[i])
+                for i in range(cls.COUNT_USERS_TEST)
             ]
         )
-        cls.author = users[0]
-        cls.user = users[1]
-
-        groups = Group.objects.bulk_create(
+        cls.author, cls.user = User.objects.all()
+        Group.objects.bulk_create(
             [
                 Group(
-                    pk=i,
                     title=f'Тестовая группа {i}',
                     slug=f'test_slug_{i}',
                     description=f'Тестовое описание {i}',
                 ) for i in range(1, cls.COUNT_GROUPS_TEST + 1)
             ]
         )
-        cls.group = groups[0]
+        cls.group = Group.objects.get(pk=1)
 
-        posts = Post.objects.bulk_create(
+        Post.objects.bulk_create(
             [
                 Post(
-                    pk=i + 1,
                     author=cls.author,
                     text=f'Тестовый пост {i + 1}',
                     group=cls.group,
@@ -48,7 +43,7 @@ class PostsTestCase(TestCase):
             ],
             batch_size=5,
         )
-        cls.post = posts[cls.COUNT_POSTS_TEST - 1]
+        cls.post = Post.objects.get(pk=cls.COUNT_POSTS_TEST)
 
     def setUp(self):
         # Создаем неавторизованный клиент

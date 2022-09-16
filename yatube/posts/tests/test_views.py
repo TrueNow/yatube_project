@@ -19,7 +19,7 @@ class PostsViewsTests(PostsTestCase):
     def check_paginator(self, client, page, author=None, group=None):
         """
         Проверка paginator на странице.
-            Если страница конкретного пользователя -> указать user.
+            Если страница конкретного пользователя -> указать author.
             Если страница конкретной группы -> указать group.
         """
         COUNT_POSTS_ON_PAGE: list = []
