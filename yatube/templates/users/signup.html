@@ -10,10 +10,7 @@
 
 {% block card_body %}
   {% include 'includes/form/_errors.html' %}
-  <form method="post"
-        {% if success_url %}
-          action="{{ success_url }}"
-        {% endif %}>
+  <form method="post" action="{{ success_url }}">
     {% include 'includes/form/_form.html' %}
     <div class="col-md-6 offset-md-4">
       <button type="submit" class="btn btn-primary">

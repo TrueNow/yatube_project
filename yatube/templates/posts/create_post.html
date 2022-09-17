@@ -19,11 +19,7 @@
 {% block card_body %}
   {% include 'includes/form/_errors.html' %}
   <form method="post"
-        action="{% if post.pk %}
-                  {% url 'posts:post_edit' post.pk %}
-                {% else %}
-                  {% url 'posts:post_create' %}
-                {% endif %}">
+        action="{{ success_url }}" enctype="multipart/form-data">
     {% include 'includes/form/_form.html' %}
     <div class="col-md-6 offset-md-4">
       <button type="submit" class="btn btn-primary">

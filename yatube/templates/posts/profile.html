@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 
 {% block title %}
-  Профайл пользователя {{ author.get_full_name }}
+  Пользователь {{ author.get_full_name }}
 {% endblock %}
 
 {% block content %}
   <div class="container py-5">
     <h1>Все посты пользователя {{ author.get_full_name }} </h1>
-    <h3>Всего постов: <span>{{ author.posts.count }}</span></h3>
+    <h3>Всего постов: {{ author.posts.count }}</h3>
     {% for post in object_list %}
       <article>
         {% include 'includes/_post.html' %}

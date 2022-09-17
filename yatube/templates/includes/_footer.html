@@ -1,1 +1,7 @@
+<p>
+    <a class="nav-link {% if view_name  == 'about:author' %}active{% endif %}"
+       href="{% url 'about:author' %}">Об авторах</a>
+    <a class="nav-link {% if view_name  == 'about:tech' %}active{% endif %}"
+       href="{% url 'about:tech' %}">Технологии</a>
+</p>
 <p>© {{ year }} Copyright <span style="color:red">Ya</span>tube</p>
