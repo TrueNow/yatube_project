@@ -4,7 +4,7 @@ from django.shortcuts import reverse
 
 
 User = get_user_model()
-
+COUNT_CHARS: int = 15
 
 class Group(models.Model):
     title = models.CharField(
@@ -35,8 +35,6 @@ class Group(models.Model):
 
 
 class Post(models.Model):
-    COUNT_CHARS: int = 15
-
     text = models.TextField(
         verbose_name='Текст поста',
         help_text='Текст поста',
@@ -60,6 +58,11 @@ class Post(models.Model):
         verbose_name='Группа',
         help_text='Группа, к которой относится пост'
     )
+    image = models.ImageField(
+        blank=True,
+        upload_to='posts/',
+        verbose_name='Картинка'
+    )
 
     class Meta:
         verbose_name = 'Пост'
@@ -67,10 +70,42 @@ class Post(models.Model):
         ordering = ('-pub_date',)
 
     def __str__(self):
-        return f'{self.text[:self.COUNT_CHARS]}'
+        return f'{self.text[:COUNT_CHARS]}'
 
     def get_absolute_url(self):
         return reverse(
             'posts:post_detail',
             kwargs={'post_id': self.pk}
+        )
+
+
+class Comment(models.Model):
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Пост',
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments',
+        verbose_name='Автор',
+    )
+    text = models.TextField(
+        verbose_name='Комментарий',
+    )
+    created = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
+    def __str__(self):
+        return self.text[:COUNT_CHARS]
+
+    def get_absolute_url(self):
+        return reverse(
+            'posts:post_detail',
+            kwargs={'post_id': self.post.pk}
         )

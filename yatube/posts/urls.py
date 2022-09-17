@@ -13,12 +13,12 @@ urlpatterns = [
     ),
     path(
         'group/<slug:group_slug>/',
-        views.PostsGroupView.as_view(),
+        views.GroupDetailView.as_view(),
         name='group_list'
     ),
     path(
         'profile/<str:username>/',
-        views.ProfileView.as_view(),
+        views.ProfileDetailView.as_view(),
         name='profile'
     ),
     path(
