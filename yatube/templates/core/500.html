@@ -1,0 +1,19 @@
+{% extends 'users/base_user.html' %}
+
+{% block title %}
+  500 Internal Server Error
+{% endblock %}
+
+{% block card_header %}
+  <h1>500 Internal Server Error</h1>
+{% endblock %}
+
+{% block card_body %}
+  <p>Сервер столкнулся с неожиданной ошибкой,
+      которая помешала ему выполнить запрос.</p>
+  <p>Лучше пройдите на
+      <a href="{% url 'posts:index' %}" style="color: black">
+          главную
+      </a>
+  </p>
+{% endblock %}

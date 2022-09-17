@@ -1,0 +1,18 @@
+{% extends 'users/base_user.html' %}
+
+{% block title %}
+  403 Forbidden Error
+{% endblock %}
+
+{% block card_header %}
+  <h1>403 Forbidden Error</h1>
+{% endblock %}
+
+{% block card_body %}
+  <p>Доступ к странице запрещен.</p>
+  <p>Лучше пройдите на
+      <a href="{% url 'posts:index' %}" style="color: black">
+          главную
+      </a>
+  </p>
+{% endblock %}
