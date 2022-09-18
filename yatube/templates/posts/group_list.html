@@ -10,9 +10,8 @@
     <p>{{ group.description }}</p>
 
     {% for post in object_list %}
-      <article>
-        {% include 'includes/_post.html' %}
-      </article>
+      {% include 'includes/post/_post_info.html' %}
+      {% include 'includes/post/_post.html' %}
       {% if not forloop.last %}<hr>{% endif %}
     {% endfor %}
 

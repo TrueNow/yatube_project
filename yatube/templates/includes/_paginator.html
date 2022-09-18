@@ -1,16 +1,15 @@
-{% comment %}
-Отрисовываем навигацию паджинатора только если
-все посты не помещаются на первую страницу
-{% endcomment %}
-
 {% if page_obj.has_other_pages %}
 <nav aria-label="Page navigation" class="my-5">
   <ul class="pagination">
     {% if page_obj.has_previous %}
-      <li class="page-item"><a class="page-link" href="?page=1">Первая</a></li>
       <li class="page-item">
-        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
-          Предыдущая
+          <a class="page-link"
+             href="?page=1">Первая
+          </a>
+      </li>
+      <li class="page-item">
+        <a class="page-link"
+           href="?page={{ page_obj.previous_page_number }}">Предыдущая
         </a>
       </li>
     {% endif %}

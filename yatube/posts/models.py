@@ -6,6 +6,7 @@ from django.shortcuts import reverse
 User = get_user_model()
 COUNT_CHARS: int = 15
 
+
 class Group(models.Model):
     title = models.CharField(
         max_length=200,
@@ -95,11 +96,12 @@ class Comment(models.Model):
     text = models.TextField(
         verbose_name='Комментарий',
     )
-    created = models.DateTimeField(auto_now=True)
+    created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = 'Комментарий'
         verbose_name_plural = 'Комментарии'
+        ordering = ('-created',)
 
     def __str__(self):
         return self.text[:COUNT_CHARS]
@@ -109,3 +111,24 @@ class Comment(models.Model):
             'posts:post_detail',
             kwargs={'post_id': self.post.pk}
         )
+
+
+class Follow(models.Model):
+    DoesNotExist = None
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='follower',
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='following',
+    )
+
+    class Meta:
+        verbose_name = 'Подписка'
+        verbose_name_plural = 'Подписки'
+
+    def __str__(self):
+        return f'{self.user} подписан на {self.author}'
