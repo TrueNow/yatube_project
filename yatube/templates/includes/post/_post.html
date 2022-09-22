@@ -1,17 +1,6 @@
 {% load thumbnail %}
 
-<article>
-  {% thumbnail post.image "960x339" crop="center" upscale=False as im %}
-    <img class="card-img my-2" src="{{ im.url }}">
-  {% endthumbnail %}
-  <p>{{ post.text }}</p>
-<div class="row">
-    <a href="{% url 'posts:post_detail' post.pk %}"
-       class="col-12 col-md-10">
-        Подробнее...
-    </a>
-  <span class="col-12 col-md-2">
-    {{ post.pub_date|date:"d E Y" }}
-  </span>
-</div>
-</article>
+{% thumbnail post.image "960x339" crop="center" upscale=False as im %}
+  <img class="card-img my-2" src="{{ im.url }}" alt="photo">
+{% endthumbnail %}
+<p>{{ post.short_text }}</p>

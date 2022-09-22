@@ -1,0 +1,9 @@
+<div style="-moz-text-align-last: justify; text-align-last: justify;">
+  <a href="{% url 'posts:post_detail' post.pk %}"
+     style="display: inline-block; color: black;">
+    Подробнее...
+  </a>
+  <span style="display: inline-block; color: grey">
+    {{ post.pub_date|date:"d E Y" }}
+  </span>
+</div>

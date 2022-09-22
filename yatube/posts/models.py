@@ -36,6 +36,8 @@ class Group(models.Model):
 
 
 class Post(models.Model):
+    C_CHARS_SHORT_TEXT = 100
+
     text = models.TextField(
         verbose_name='Текст поста',
         help_text='Текст поста',
@@ -78,6 +80,11 @@ class Post(models.Model):
             'posts:post_detail',
             kwargs={'post_id': self.pk}
         )
+
+    def short_text(self):
+        if len(str(self.text)) <= self.C_CHARS_SHORT_TEXT:
+            return self.text
+        return f'{self.text[:self.C_CHARS_SHORT_TEXT]}...'
 
 
 class Comment(models.Model):

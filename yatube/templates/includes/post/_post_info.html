@@ -1,26 +1,20 @@
 {% with request.resolver_match.view_name as view_name %}
 
-<ul>
   {% if 'profile' not in view_name %}
-    <li>
+    <p>
       Автор:
       <a href="{% url 'posts:profile' post.author.username %}">
         {{ post.author.get_full_name }}
       </a>
-    </li>
+    </p>
   {% endif %}
-  {% if post.group %}
-    <li>
+  {% if post.group and 'group' not in view_name %}
+    <p>
       Группа:
-      {% if 'group' in view_name %}
+      <a href="{% url 'posts:group_list' post.group.slug %}">
         {{ post.group.title }}
-      {% else %}
-        <a href="{% url 'posts:group_list' post.group.slug %}">
-          {{ post.group.title }}
-        </a>
-      {% endif %}
-    </li>
+      </a>
+    </p>
   {% endif %}
-</ul>
 
 {% endwith %}

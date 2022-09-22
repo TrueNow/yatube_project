@@ -1,20 +1,20 @@
-{% extends "base.html" %}
+{% extends 'posts/base_detail.html' %}
 
 {% block title %}
   Записи сообщества {{ group }}
 {% endblock %}
 
-{% block content %}
-  <div class="container py-5">
-    <h1>{{ group.title }}</h1>
-    <p>{{ group.description }}</p>
+{% block aside %}
+  <h2>{{ group.title }}</h2>
+  <p>{{ group.description }}</p>
+{% endblock %}
 
-    {% for post in object_list %}
-      {% include 'includes/post/_post_info.html' %}
-      {% include 'includes/post/_post.html' %}
-      {% if not forloop.last %}<hr>{% endif %}
-    {% endfor %}
-
-    {% include 'includes/_paginator.html' %}
-  </div>
+{% block article %}
+  {% for post in object_list %}
+    {% include 'includes/post/_post_info.html' %}
+    {% include 'includes/post/_post.html' %}
+    {% include 'includes/post/_post_after.html' %}
+    {% if not forloop.last %}<hr>{% endif %}
+  {% endfor %}
+  {% include 'includes/_paginator.html' %}
 {% endblock %}

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block title %}
-  Последние обновления на сайте
+  {{ title }}
 {% endblock %}
 
 {% block content %}
@@ -10,6 +10,7 @@
     {% for post in posts %}
       {% include 'includes/post/_post_info.html' %}
       {% include 'includes/post/_post.html' %}
+      {% include 'includes/post/_post_after.html' %}
       {% if not forloop.last %}<hr>{% endif %}
     {% endfor %}
     {% include 'includes/_paginator.html' %}
