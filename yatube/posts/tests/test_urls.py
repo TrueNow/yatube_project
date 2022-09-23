@@ -1,27 +1,33 @@
 from http import HTTPStatus
 
-from .test import PostsTestCase
+from .test import *
 
 
 class PostsURLTests(PostsTestCase):
     def test_url_status_code(self):
         """Проверка status_code страниц."""
         clients_urls_dict = {
-            self.client_anonymous: {
-                '/': HTTPStatus.OK,
-                f'/group/{self.group.slug}/': HTTPStatus.OK,
-                f'/profile/{self.author.username}/': HTTPStatus.OK,
-                f'/posts/{self.post.pk}/': HTTPStatus.OK,
-                '/create/': HTTPStatus.FOUND,
-                f'/posts/{self.post.pk}/edit/': HTTPStatus.FOUND,
-                '/unexisting_page/': HTTPStatus.NOT_FOUND,
+            self.client: {
+                INDEX_PAGE: HTTPStatus.OK,
+                FOLLOW_PAGE: HTTPStatus.FOUND,
+                GROUP_PAGE(self.group.slug): HTTPStatus.OK,
+                PROFILE_PAGE(self.author.username): HTTPStatus.OK,
+                POST_DETAIL_PAGE(self.post.pk): HTTPStatus.OK,
+                POST_CREATE_PAGE: HTTPStatus.FOUND,
+                POST_EDIT_PAGE(self.post.pk): HTTPStatus.FOUND,
+                PROFILE_FOLLOW(self.author.username): HTTPStatus.FOUND,
+                PROFILE_UNFOLLOW(self.author.username): HTTPStatus.FOUND,
+                UNEXISTING_PAGE: HTTPStatus.NOT_FOUND,
             },
             self.client_author: {
-                f'/posts/{self.post.pk}/edit/': HTTPStatus.OK,
+                FOLLOW_PAGE: HTTPStatus.OK,
+                POST_EDIT_PAGE(self.post.pk): HTTPStatus.OK,
             },
             self.client_user: {
-                '/create/': HTTPStatus.OK,
-                f'/posts/{self.post.pk}/edit/': HTTPStatus.FOUND,
+                POST_CREATE_PAGE: HTTPStatus.OK,
+                POST_EDIT_PAGE(self.post.pk): HTTPStatus.FOUND,
+                PROFILE_FOLLOW(self.author.username): HTTPStatus.FOUND,
+                PROFILE_UNFOLLOW(self.author.username): HTTPStatus.FOUND,
             }
         }
         for client, urls_status_codes_dict in clients_urls_dict.items():
@@ -34,18 +40,18 @@ class PostsURLTests(PostsTestCase):
     def test_urls_correct_redirect(self):
         """Перенаправление пользователей на соответствующие страницы."""
         clients_urls_dict = {
-            self.client_anonymous: {
-                '/create/': (
-                    '/auth/login/?next=/create/'
+            self.client: {
+                POST_CREATE_PAGE: (
+                    f'/auth/login/?next={POST_CREATE_PAGE}'
                 ),
-                f'/posts/{self.post.pk}/edit/': (
-                    f'/auth/login/?next=/posts/{self.post.pk}/edit/'
+                POST_EDIT_PAGE(self.post.pk): (
+                    f'/auth/login/?next={POST_EDIT_PAGE(self.post.pk)}'
                 ),
             },
             self.client_user: {
-                f'/posts/{self.post.pk}/edit/': (
-                    f'/posts/{self.post.pk}/'
-                ),
+                POST_EDIT_PAGE(self.post.pk): (
+                    f'{POST_DETAIL_PAGE(self.post.pk)}'
+                )
             },
         }
         for client, urls_redirects_dict in clients_urls_dict.items():
@@ -58,12 +64,13 @@ class PostsURLTests(PostsTestCase):
     def test_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
         urls_templates_dict = {
-            '/': 'posts/index.html',
-            f'/group/{self.group.slug}/': 'posts/group_list.html',
-            f'/profile/{self.author.username}/': 'posts/profile.html',
-            f'/posts/{self.post.pk}/': 'posts/post_detail.html',
-            '/create/': 'posts/create_post.html',
-            f'/posts/{self.post.pk}/edit/': 'posts/create_post.html',
+            INDEX_PAGE: 'posts/index.html',
+            FOLLOW_PAGE: 'posts/index.html',
+            GROUP_PAGE(self.group.slug): 'posts/group_detail.html',
+            PROFILE_PAGE(self.author.username): 'posts/profile_detail.html',
+            POST_DETAIL_PAGE(self.post.pk): 'posts/post_detail.html',
+            POST_CREATE_PAGE: 'posts/create_post.html',
+            POST_EDIT_PAGE(self.post.pk): 'posts/create_post.html',
         }
         for url, template in urls_templates_dict.items():
             with self.subTest(address=url):

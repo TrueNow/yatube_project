@@ -1,11 +1,12 @@
 from .test import PostsTestCase
+from ..models import COUNT_CHARS
 
 
 class PostsModelTest(PostsTestCase):
     def test_models_have_correct_object_names(self):
         """Проверяем, что у моделей корректно работает __str__."""
         models_strings_dict = {
-            self.post: f'Тестовый пост {self.post.pk}'[:self.post.COUNT_CHARS],
+            self.post: f'Тестовый пост {self.post.pk}'[:COUNT_CHARS],
             self.group: f'Тестовая группа {self.group.pk}',
         }
         for model, string in models_strings_dict.items():

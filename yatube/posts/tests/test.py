@@ -1,9 +1,43 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
+from django.urls import reverse
 
 from ..models import Group, Post
 
 User = get_user_model()
+
+INDEX_PAGE = reverse('posts:index')
+FOLLOW_PAGE = reverse('posts:follow')
+GROUP_PAGE = lambda group_slug: reverse(
+    'posts:group_detail',
+    args=[group_slug]
+)
+PROFILE_PAGE = lambda username: reverse(
+    'posts:profile_detail',
+    args=[username]
+)
+PROFILE_FOLLOW = lambda username: reverse(
+    'posts:profile_follow',
+    args=[username]
+)
+PROFILE_UNFOLLOW = lambda username: reverse(
+    'posts:profile_unfollow',
+    args=[username]
+)
+POST_DETAIL_PAGE = lambda post_id: reverse(
+    'posts:post_detail',
+    args=[post_id]
+)
+POST_CREATE_PAGE = reverse('posts:post_create')
+POST_EDIT_PAGE = lambda post_id: reverse(
+    'posts:post_edit',
+    args=[post_id]
+)
+POST_DELETE_PAGE = lambda post_id: reverse(
+    'posts:post_delete',
+    args=[post_id]
+)
+UNEXISTING_PAGE = '/unexisting_page/'
 
 
 class PostsTestCase(TestCase):
@@ -47,8 +81,8 @@ class PostsTestCase(TestCase):
 
     def setUp(self):
         # Создаем неавторизованный клиент
-        self.client_anonymous = Client()
-        self.client_anonymous.name = 'Anonymous'
+        self.client = Client()
+        self.client.name = 'Anonymous'
 
         # Создаем авторизованный клиент (автор)
         self.client_author = Client()
@@ -59,3 +93,7 @@ class PostsTestCase(TestCase):
         self.client_user = Client()
         self.client_user.force_login(self.user)
         self.client_user.name = self.user.username
+
+    @staticmethod
+    def create_page(name, kwargs):
+        return reverse(name, kwargs=kwargs)

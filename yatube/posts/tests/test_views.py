@@ -1,9 +1,10 @@
 from django.db.models import QuerySet
-from django.shortcuts import reverse, get_object_or_404
+from django.db.models.fields.files import ImageFieldFile
+from django.shortcuts import get_object_or_404
 from http import HTTPStatus
 
-from .test import PostsTestCase
-from ..models import Post
+from .test import *
+from ..models import Post, Comment, Follow
 from ..views import PAGINATE_BY
 
 
@@ -39,14 +40,33 @@ class PostsViewsTests(PostsTestCase):
                 error_message.format(count_posts)
             )
 
+    def test_index_cache(self):
+        client = self.client_author
+
+        page = INDEX_PAGE
+
+        response = client.get(page)
+        posts = response.context.get('posts')
+        self.assertIsInstance(posts, QuerySet)
+        post = Post.objects.get(id=4)
+        print('\n***********')
+        print(posts)
+        print('-------------')
+        print(post)
+        print('----------------')
+        client.get(POST_DELETE_PAGE(post.pk))
+        response = client.get(page)
+        posts = response.context.get('posts')
+        self.assertIn(post, posts)
+        print(posts)
+        print('**************')
+
     def test_index_page(self):
         """Тест главной страницы."""
-        client = self.client_anonymous
-        name = 'posts:index'
-        kwargs = {}
+        client = self.client
         template = 'posts/index.html'
 
-        page = reverse(name, kwargs=kwargs)
+        page = INDEX_PAGE
         self.check_paginator(client, page)
 
         response = client.get(page)
@@ -57,16 +77,43 @@ class PostsViewsTests(PostsTestCase):
         for post in posts:
             with self.subTest(post=post):
                 self.assertIsInstance(post, Post)
+                self.assertIsInstance(post.image, ImageFieldFile)
+
+    def test_follow_page(self):
+        """Тест ленты."""
+        user = self.user
+        author = self.author
+        client = self.client_user
+        template = 'posts/index.html'
+
+        client.get(PROFILE_FOLLOW(author.username))
+        self.assertTrue(get_object_or_404(Follow, user=user, author=author))
+
+        page = FOLLOW_PAGE
+        self.check_paginator(client, page)
+
+        response = client.get(page)
+        self.assertTemplateUsed(response, template)
+        posts = response.context.get('posts')
+        self.assertIsInstance(posts, QuerySet)
+
+        authors = [
+            follow.author
+            for follow in Follow.objects.filter(user=user)
+        ]
+        posts_db = Post.objects.filter(author__in=authors)
+        for post in posts:
+            with self.subTest(post=post.pk):
+                self.assertIn(post, posts_db)
+        client.get(PROFILE_UNFOLLOW(author.username))
 
     def test_group_list_page(self):
         """Тест страницы группы."""
         group = self.group
-        client = self.client_anonymous
-        name = 'posts:group_list'
-        kwargs = {'group_slug': group.slug}
-        template = 'posts/group_list.html'
+        client = self.client
+        template = 'posts/group_detail.html'
 
-        page = reverse(name, kwargs=kwargs)
+        page = GROUP_PAGE(group.slug)
         self.check_paginator(client, page, group=group)
 
         response = client.get(page)
@@ -78,16 +125,15 @@ class PostsViewsTests(PostsTestCase):
         for post in posts:
             with self.subTest(post=post):
                 self.assertEqual(post.group, group)
+                self.assertIsInstance(post.image, ImageFieldFile)
 
     def test_profile_page(self):
         """Тест страницы профиля автора."""
         author = self.author
-        client = self.client_anonymous
-        name = 'posts:profile'
-        kwargs = {'username': author.username}
-        template = 'posts/profile.html'
+        client = self.client
+        template = 'posts/profile_detail.html'
 
-        page = reverse(name, kwargs=kwargs)
+        page = PROFILE_PAGE(author.username)
         self.check_paginator(client, page, author=author)
 
         response = client.get(page)
@@ -99,55 +145,78 @@ class PostsViewsTests(PostsTestCase):
         for post in posts:
             with self.subTest(post=post):
                 self.assertEqual(post.author, author)
+                self.assertIsInstance(post.image, ImageFieldFile)
 
     def test_post_detail_page(self):
         """Тест страницы выбранного поста."""
         post = self.post
-        client = self.client
-        name = 'posts:post_detail'
-        kwargs = {'post_id': post.pk}
+        user = self.user
+        clients = (self.client, self.client_user)
         template = 'posts/post_detail.html'
 
-        page = reverse(name, kwargs=kwargs)
+        page = POST_DETAIL_PAGE(post.pk)
 
-        response = client.get(page)
+        response = self.client.get(page)
         self.assertTemplateUsed(response, template)
         response_post = response.context.get('post')
         self.assertEqual(response_post, post)
+        self.assertIsInstance(response_post.image, ImageFieldFile)
+
+        # Анонимный клиент
+        new_comment_data = {
+            'text': 'Новый комментарий',
+        }
+        for client in clients:
+            count_comments_before = Comment.objects.filter(post=post).count()
+            response = client.post(page, data=new_comment_data)
+            self.assertEqual(response.status_code, HTTPStatus.FOUND)
+            self.assertRedirects(
+                response,
+                reverse(
+                    'posts:post_detail',
+                    kwargs={'post_id': post.pk}
+                )
+            )
+            count_comments_after = Comment.objects.filter(post=post).count()
+            if client == clients[1]:
+                count_comments_after -= 1
+            self.assertEqual(
+                count_comments_before,
+                count_comments_after
+            )
+
+        self.assertTrue(
+            get_object_or_404(
+                Comment,
+                post=post,
+                author=user,
+                text=new_comment_data.get('text'),
+            )
+        )
 
     def test_post_create_page(self):
         """Тест страницы создания нового поста."""
         user = self.author
         group = self.group
         client = self.client_author
-        name = 'posts:post_create'
-        kwargs = {}
         template = 'posts/create_post.html'
 
-        page = reverse(name, kwargs=kwargs)
+        page = POST_CREATE_PAGE
 
         response = client.get(page)
         self.assertTemplateUsed(response, template)
 
-        count_posts_before_add = Post.objects.count()
         new_post_data = {
             'text': 'Новый пост',
-            'group': group.pk
+            'group': group.pk,
+            'image': 'img/logo.png'
         }
+        count_posts_before = Post.objects.count()
         response = client.post(page, data=new_post_data)
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
-        self.assertRedirects(
-            response,
-            reverse(
-                'posts:profile',
-                kwargs={'username': user.username}
-            )
-        )
-        count_posts_after_add = Post.objects.count()
-        self.assertEqual(
-            count_posts_after_add,
-            count_posts_before_add + 1,
-        )
+        count_posts_after = Post.objects.count()
+        self.assertRedirects(response, PROFILE_PAGE(user.username))
+        self.assertEqual(count_posts_before, count_posts_after - 1)
 
         self.assertTrue(
             get_object_or_404(
@@ -162,36 +231,25 @@ class PostsViewsTests(PostsTestCase):
         """Тест страницы редактирования нового поста."""
         post = self.post
         client = self.client_author
-        name = 'posts:post_edit'
-        kwargs = {'post_id': post.pk}
         template = 'posts/create_post.html'
 
-        page = reverse(name, kwargs=kwargs)
+        page = POST_EDIT_PAGE(post.pk)
 
-        response = client.get(page)
+        response = self.client_author.get(page)
         self.assertTemplateUsed(response, template)
         response_post = response.context.get('post')
         self.assertEqual(response_post, post)
 
-        count_posts_before_edit = Post.objects.count()
         new_post_data = {
             'text': 'Отредактированный пост',
             'group': post.group.pk
         }
+        count_posts_before = Post.objects.count()
         response = client.post(page, data=new_post_data)
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
-        self.assertRedirects(
-            response,
-            reverse(
-                'posts:post_detail',
-                kwargs={'post_id': post.pk}
-            )
-        )
-        count_posts_after_edit = Post.objects.count()
-        self.assertEqual(
-            count_posts_after_edit,
-            count_posts_before_edit,
-        )
+        count_posts_after = Post.objects.count()
+        self.assertRedirects(response, POST_DETAIL_PAGE(post.pk))
+        self.assertEqual(count_posts_after, count_posts_before)
 
         self.assertTrue(
             get_object_or_404(
