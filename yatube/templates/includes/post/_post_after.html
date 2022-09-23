@@ -1,9 +1,20 @@
+{% with request.resolver_match.view_name as view_name %}
+
 <div style="-moz-text-align-last: justify; text-align-last: justify;">
-  <a href="{% url 'posts:post_detail' post.pk %}"
-     style="display: inline-block; color: black;">
-    Подробнее...
-  </a>
+  {% if 'post_detail' in view_name %}
+    {% if request.user == post.author %}
+      <a href="{% url 'posts:post_edit' post.pk %}"
+         style="display: inline-block; color: black;">Редактировать</a>
+    {% endif %}
+  {% else %}
+    <a href="{% url 'posts:post_detail' post.pk %}"
+       style="display: inline-block; color: black;">
+      Подробнее...
+    </a>
+  {% endif %}
   <span style="display: inline-block; color: grey">
     {{ post.pub_date|date:"d E Y" }}
   </span>
 </div>
+
+{% endwith %}

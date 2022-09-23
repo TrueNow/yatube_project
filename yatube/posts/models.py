@@ -4,7 +4,7 @@ from django.shortcuts import reverse
 
 
 User = get_user_model()
-COUNT_CHARS: int = 15
+COUNT_CHARS: int = 30
 
 
 class Group(models.Model):

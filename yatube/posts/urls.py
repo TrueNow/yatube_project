@@ -9,32 +9,32 @@ app_name = 'posts'
 urlpatterns = [
     path(
         '',
-        cache_page(60 * 15)(views.IndexView.as_view()),
+        cache_page(20)(views.IndexView.as_view()),
         name='index'
     ),
     path(
         'follow/',
-        views.FollowIndexView.as_view(),
+        views.FollowView.as_view(),
         name='follow'
     ),
     path(
         'group/<slug:group_slug>/',
         views.GroupDetailView.as_view(),
-        name='group_list'
+        name='group_detail'
     ),
     path(
         'profile/<str:username>/',
         views.ProfileDetailView.as_view(),
-        name='profile'
+        name='profile_detail'
     ),
     path(
         'profile/<str:username>/follow/',
-        views.FollowProfileView.as_view(),
+        views.ProfileFollowView.as_view(),
         name='profile_follow'
     ),
     path(
         'profile/<str:username>/unfollow/',
-        views.UnfollowProfileView.as_view(),
+        views.ProfileUnfollowView.as_view(),
         name='profile_unfollow'
     ),
     path(
@@ -49,7 +49,12 @@ urlpatterns = [
     ),
     path(
         'posts/<int:post_id>/edit/',
-        views.PostUpdateView.as_view(),
+        views.PostEditView.as_view(),
         name='post_edit'
     ),
+    path(
+        'posts/<int:post_id>/delete/',
+        views.PostDeleteView.as_view(),
+        name='post_delete'
+    )
 ]

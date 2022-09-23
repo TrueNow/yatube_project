@@ -1,4 +1,4 @@
-{% extends "users/base_user.html" %}
+{% extends 'users/base_user.html' %}
 
 {% block title %}
   {% if post.pk %}
@@ -22,13 +22,19 @@
         action="{{ success_url }}" enctype="multipart/form-data">
     {% include 'includes/form/_form.html' %}
     <div class="col-md-6 offset-md-4">
-      <button type="submit" class="btn btn-primary">
-        {% if post.pk %}
+      {% if post.pk %}
+        <button type="submit" class="btn btn-primary">
           Сохранить
-        {% else %}
+        </button>
+          <a href="{% url 'posts:post_delete' post.pk %}"
+             class="btn btn-danger">
+          Удалить
+          </a>
+      {% else %}
+        <button type="submit" class="btn btn-primary">
           Добавить
-        {% endif %}
-      </button>
+        </button>
+      {% endif %}
     </div>
   </form>
 {% endblock %}

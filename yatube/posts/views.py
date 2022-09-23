@@ -17,14 +17,12 @@ class IndexView(generic.ListView):
     paginate_by = PAGINATE_BY
 
     def get_context_data(self, *, object_list=None, **kwargs):
-        context = super().get_context_data(
-            object_list=Post.objects.all()
-        )
+        context = super().get_context_data()
         context['title'] = 'Последние обновления на сайте'
         return context
 
 
-class FollowIndexView(LoginRequiredMixin, generic.ListView):
+class FollowView(LoginRequiredMixin, generic.ListView):
     model = Post
     context_object_name = 'posts'
     template_name = 'posts/index.html'
@@ -47,7 +45,7 @@ class GroupDetailView(generic.DetailView, MultipleObjectMixin):
     slug_url_kwarg = 'group_slug'
     slug_field = 'slug'
     context_object_name = 'group'
-    template_name = 'posts/group_list.html'
+    template_name = 'posts/group_detail.html'
     paginate_by = PAGINATE_BY
 
     def get_context_data(self, **kwargs):
@@ -63,7 +61,7 @@ class ProfileDetailView(generic.DetailView, MultipleObjectMixin):
     slug_url_kwarg = 'username'
     slug_field = 'username'
     context_object_name = 'author'
-    template_name = 'posts/profile.html'
+    template_name = 'posts/profile_detail.html'
     paginate_by = PAGINATE_BY
 
     def is_follow(self, user=None):
@@ -83,6 +81,22 @@ class ProfileDetailView(generic.DetailView, MultipleObjectMixin):
         )
         context['following'] = self.is_follow(self.request.user)
         return context
+
+
+class ProfileFollowView(LoginRequiredMixin, ProfileDetailView):
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if request.user != self.object:
+            Follow.objects.create(user=request.user, author=self.object)
+        return redirect('posts:profile_detail', self.object.username)
+
+
+class ProfileUnfollowView(LoginRequiredMixin, ProfileDetailView):
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if request.user != self.object:
+            Follow.objects.get(user=request.user, author=self.object).delete()
+        return redirect('posts:profile_detail', self.object.username)
 
 
 class PostDetailView(generic.DetailView, FormMixin):
@@ -127,10 +141,12 @@ class PostCreateView(LoginRequiredMixin, generic.CreateView):
         post = form.save(commit=False)
         post.author = self.request.user
         post.save()
-        return redirect('posts:profile', username=self.request.user.username)
+        return redirect(
+            'posts:profile_detail',
+            username=self.request.user.username
+        )
 
-
-class PostUpdateView(LoginRequiredMixin, generic.UpdateView):
+class PostEditView(LoginRequiredMixin, generic.UpdateView):
     model = Post
     form_class = PostForm
     pk_url_kwarg = 'post_id'
@@ -144,17 +160,19 @@ class PostUpdateView(LoginRequiredMixin, generic.UpdateView):
         return response
 
 
-class FollowProfileView(LoginRequiredMixin, ProfileDetailView):
-    def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        if request.user != self.object:
-            Follow.objects.create(user=request.user, author=self.object)
-        return redirect('posts:profile', self.object.username)
+class PostDeleteView(LoginRequiredMixin, generic.UpdateView):
+    model = Post
+    form_class = PostForm
+    pk_url_kwarg = 'post_id'
+    context_object_name = 'post'
+    template_name = 'posts/create_post.html'
 
-
-class UnfollowProfileView(LoginRequiredMixin, ProfileDetailView):
     def get(self, request, *args, **kwargs):
-        self.object = self.get_object()
-        if request.user != self.object:
-            Follow.objects.get(user=request.user, author=self.object).delete()
-        return redirect('posts:profile', self.object.username)
+        super().get(request, *args, **kwargs)
+        if request.user != self.object.author:
+            return redirect('posts:post_detail', post_id=self.object.pk)
+        self.object.delete()
+        return redirect(
+            'posts:profile_detail',
+            username=self.object.author.username
+        )

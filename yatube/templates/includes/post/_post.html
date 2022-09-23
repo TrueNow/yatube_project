@@ -1,6 +1,13 @@
 {% load thumbnail %}
+{% with request.resolver_match.view_name as view_name %}
 
 {% thumbnail post.image "960x339" crop="center" upscale=False as im %}
   <img class="card-img my-2" src="{{ im.url }}" alt="photo">
 {% endthumbnail %}
-<p>{{ post.short_text }}</p>
+{% if 'post_detail' in view_name %}
+  <p>{{ post.text }}</p>
+{% else %}
+  <p>{{ post.short_text }}</p>
+{% endif %}
+
+{% endwith %}
