@@ -1,6 +1,7 @@
+from django.core.cache import cache
 from http import HTTPStatus
 
-from .test import *
+from .test import PostsTestCase
 
 
 class PostsURLTests(PostsTestCase):
@@ -8,26 +9,28 @@ class PostsURLTests(PostsTestCase):
         """Проверка status_code страниц."""
         clients_urls_dict = {
             self.client: {
-                INDEX_PAGE: HTTPStatus.OK,
-                FOLLOW_PAGE: HTTPStatus.FOUND,
-                GROUP_PAGE(self.group.slug): HTTPStatus.OK,
-                PROFILE_PAGE(self.author.username): HTTPStatus.OK,
-                POST_DETAIL_PAGE(self.post.pk): HTTPStatus.OK,
-                POST_CREATE_PAGE: HTTPStatus.FOUND,
-                POST_EDIT_PAGE(self.post.pk): HTTPStatus.FOUND,
-                PROFILE_FOLLOW(self.author.username): HTTPStatus.FOUND,
-                PROFILE_UNFOLLOW(self.author.username): HTTPStatus.FOUND,
-                UNEXISTING_PAGE: HTTPStatus.NOT_FOUND,
+                self.INDEX_PAGE: HTTPStatus.OK,
+                self.FOLLOW_PAGE: HTTPStatus.FOUND,
+                self.GROUP_PAGE: HTTPStatus.OK,
+                self.PROFILE_PAGE: HTTPStatus.OK,
+                self.PROFILE_FOLLOW: HTTPStatus.FOUND,
+                self.PROFILE_UNFOLLOW: HTTPStatus.FOUND,
+                self.POST_CREATE_PAGE: HTTPStatus.FOUND,
+                self.POST_DETAIL_PAGE: HTTPStatus.OK,
+                self.POST_COMMENT: HTTPStatus.FOUND,
+                self.POST_EDIT_PAGE: HTTPStatus.FOUND,
+                self.POST_DELETE: HTTPStatus.FOUND,
+                '/UNEXISTING_PAGE/': HTTPStatus.NOT_FOUND,
             },
             self.client_author: {
-                FOLLOW_PAGE: HTTPStatus.OK,
-                POST_EDIT_PAGE(self.post.pk): HTTPStatus.OK,
+                self.FOLLOW_PAGE: HTTPStatus.OK,
+                self.POST_EDIT_PAGE: HTTPStatus.OK,
             },
             self.client_user: {
-                POST_CREATE_PAGE: HTTPStatus.OK,
-                POST_EDIT_PAGE(self.post.pk): HTTPStatus.FOUND,
-                PROFILE_FOLLOW(self.author.username): HTTPStatus.FOUND,
-                PROFILE_UNFOLLOW(self.author.username): HTTPStatus.FOUND,
+                self.POST_CREATE_PAGE: HTTPStatus.OK,
+                self.POST_EDIT_PAGE: HTTPStatus.FOUND,
+                self.PROFILE_FOLLOW: HTTPStatus.FOUND,
+                self.PROFILE_UNFOLLOW: HTTPStatus.FOUND,
             }
         }
         for client, urls_status_codes_dict in clients_urls_dict.items():
@@ -41,17 +44,21 @@ class PostsURLTests(PostsTestCase):
         """Перенаправление пользователей на соответствующие страницы."""
         clients_urls_dict = {
             self.client: {
-                POST_CREATE_PAGE: (
-                    f'/auth/login/?next={POST_CREATE_PAGE}'
+                self.POST_COMMENT: (
+                    f'/auth/login/?next={self.POST_COMMENT}'
                 ),
-                POST_EDIT_PAGE(self.post.pk): (
-                    f'/auth/login/?next={POST_EDIT_PAGE(self.post.pk)}'
+                self.POST_CREATE_PAGE: (
+                    f'/auth/login/?next={self.POST_CREATE_PAGE}'
+                ),
+                self.POST_EDIT_PAGE: (
+                    f'/auth/login/?next={self.POST_EDIT_PAGE}'
+                ),
+                self.POST_DELETE: (
+                    f'/auth/login/?next={self.POST_DELETE}'
                 ),
             },
             self.client_user: {
-                POST_EDIT_PAGE(self.post.pk): (
-                    f'{POST_DETAIL_PAGE(self.post.pk)}'
-                )
+                self.POST_EDIT_PAGE: f'{self.POST_DETAIL_PAGE}'
             },
         }
         for client, urls_redirects_dict in clients_urls_dict.items():
@@ -63,14 +70,15 @@ class PostsURLTests(PostsTestCase):
 
     def test_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
+        cache.clear()
         urls_templates_dict = {
-            INDEX_PAGE: 'posts/index.html',
-            FOLLOW_PAGE: 'posts/index.html',
-            GROUP_PAGE(self.group.slug): 'posts/group_detail.html',
-            PROFILE_PAGE(self.author.username): 'posts/profile_detail.html',
-            POST_DETAIL_PAGE(self.post.pk): 'posts/post_detail.html',
-            POST_CREATE_PAGE: 'posts/create_post.html',
-            POST_EDIT_PAGE(self.post.pk): 'posts/create_post.html',
+            self.INDEX_PAGE: 'posts/index.html',
+            self.FOLLOW_PAGE: 'posts/index.html',
+            self.GROUP_PAGE: 'posts/group_list.html',
+            self.PROFILE_PAGE: 'posts/profile_detail.html',
+            self.POST_DETAIL_PAGE: 'posts/post_detail.html',
+            self.POST_CREATE_PAGE: 'posts/create_post.html',
+            self.POST_EDIT_PAGE: 'posts/create_post.html',
         }
         for url, template in urls_templates_dict.items():
             with self.subTest(address=url):

@@ -1,17 +1,18 @@
 {% with request.resolver_match.view_name as view_name %}
-
   {% if 'profile_detail' not in view_name %}
-    <p>
+    <p class="mb-1">
       Автор:
-      <a href="{% url 'posts:profile_detail' post.author.username %}">
+      <a href="{% url 'posts:profile_detail' post.author.username %}"
+         style="color: black;">
         {{ post.author.get_full_name }}
       </a>
     </p>
   {% endif %}
-  {% if post.group and 'group_detail' not in view_name %}
-    <p>
+  {% if 'group_detail' not in view_name and post.group %}
+    <p class="mb-1">
       Группа:
-      <a href="{% url 'posts:group_detail' post.group.slug %}">
+      <a href="{% url 'posts:group_detail' post.group.slug %}"
+         style="color: black;">
         {{ post.group.title }}
       </a>
     </p>

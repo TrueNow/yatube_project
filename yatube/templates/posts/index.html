@@ -1,13 +1,19 @@
 {% extends 'base.html' %}
 
 {% block title %}
-  {{ title }}
+  {% with request.resolver_match.view_name as view_name %}
+    {% if 'index' in view_name %}
+      Последние обновления на сайте
+    {% elif 'follow' in view_name %}
+      Лента
+    {% endif %}
+  {% endwith %}
 {% endblock %}
 
 {% block content %}
   <div class="container py-5">
     {% include 'includes/_switcher.html' %}
-    {% for post in posts %}
+    {% for post in page_obj %}
       {% include 'includes/post/_post_info.html' %}
       {% include 'includes/post/_post.html' %}
       {% include 'includes/post/_post_after.html' %}

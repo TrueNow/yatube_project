@@ -6,7 +6,12 @@
 
 {% block aside %}
   <h2>{{ author.get_full_name }}</h2>
-  <p>Публикаций: {{ author.posts.count }}</p>
+  <p class="mb-3" style="color: grey; text-decoration: none">
+    @{{ author.username }}
+  </p>
+  <p>
+    Статей: {{ author.posts.count }}
+  </p>
   {% if author != request.user %}
     {% if following %}
       <a class="btn btn-lg btn-light"
@@ -23,7 +28,7 @@
 {% endblock %}
 
 {% block article %}
-  {% for post in object_list %}
+  {% for post in page_obj %}
     {% include 'includes/post/_post_info.html' %}
     {% include 'includes/post/_post.html' %}
     {% include 'includes/post/_post_after.html' %}

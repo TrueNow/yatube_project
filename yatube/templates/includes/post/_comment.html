@@ -5,11 +5,11 @@
     <h5 class="card-header">Добавить комментарий:</h5>
     <div class="card-body">
       <div style="clear:both;">
-        <form method="post" action="{{ success_url }}">
+        <form method="post" action="{% url 'posts:post_comment' post.pk %}">
           {% include 'includes/form/_form.html' %}
           <div class="col-md-6 offset-md-4">
             <button type="submit" class="btn btn-primary">
-              Сохранить
+              Отправить
             </button>
           </div>
         </form>
@@ -18,16 +18,18 @@
   </div>
 {% endif %}
 
-<h5>Комментарии:</h5>
-{% for comment in comments %}
-  <div class="media mb-4">
-    <div class="media-body">
-      <h6 class="mt-0">
-        <a href="{% url 'posts:profile_detail' comment.author.username %}">
-          {{ comment.author.username }}
-        </a>
-      </h6>
-      <p>{{ comment.text }}</p>
+{% if comments %}
+  <h5>Комментарии:</h5>
+  {% for comment in comments %}
+    <div class="media mb-4">
+      <div class="media-body">
+        <h6 class="mt-0">
+          <a href="{% url 'posts:profile_detail' comment.author.username %}">
+            {{ comment.author.username }}
+          </a>
+        </h6>
+        <p>{{ comment.text }}</p>
+      </div>
     </div>
-  </div>
-{% endfor %}
+  {% endfor %}
+{% endif %}
